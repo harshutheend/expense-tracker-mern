@@ -13,11 +13,12 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "https://expense-tracker-mern-068l.onrender.com",
+      "https://expense-tracker-mern-woad.vercel.app",
     ],
-    credentials: true,
   }),
 );
+
+app.use(express.json());
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
