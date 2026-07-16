@@ -4,7 +4,7 @@ const otpSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: true,
+      required: false,
     },
 
     email: {
@@ -15,11 +15,17 @@ const otpSchema = new mongoose.Schema(
 
     password: {
       type: String,
-      required: true,
+      required: false,
     },
 
     otp: {
       type: String,
+      required: true,
+    },
+
+    purpose: {
+      type: String,
+      enum: ["register", "reset"],
       required: true,
     },
 

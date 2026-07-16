@@ -61,10 +61,20 @@ function Login() {
             onChange={(e) => setPassword(e.target.value)}
           />
 
+          {/* Forgot Password */}
+          <div className="flex justify-end">
+            <Link
+              to="/forgot-password"
+              className="text-sm text-blue-600 hover:underline"
+            >
+              Forgot Password?
+            </Link>
+          </div>
+
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white rounded-lg p-3 hover:bg-blue-700"
+            className="w-full bg-blue-600 text-white rounded-lg p-3 hover:bg-blue-700 disabled:opacity-50"
           >
             {loading ? "Logging in..." : "Login"}
           </button>
