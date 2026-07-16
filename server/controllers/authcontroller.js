@@ -1,13 +1,13 @@
 import User from "../models/User.js";
+import OTP from "../models/OTP.js";
+import sendEmail from "../utils/sendEmail.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-
 // Register User
-export const registerUser = async (req, res) => {
+export const sendOTP = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
-    // Check for empty fields
     if (!name || !email || !password) {
       return res.status(400).json({
         success: false,
@@ -15,7 +15,6 @@ export const registerUser = async (req, res) => {
       });
     }
 
-    // Check if user already exists
     const existingUser = await User.findOne({ email });
 
     if (existingUser) {
@@ -25,24 +24,96 @@ export const registerUser = async (req, res) => {
       });
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // Remove any previous OTP
+    await OTP.deleteMany({ email });
 
-    // Create user
-    const user = await User.create({
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+    await OTP.create({
       name,
       email,
+      password,
+      otp,
+      expiresAt,
+    });
+
+    await sendEmail(
+      email,
+      "Expense Tracker - Email Verification",
+      `
+      <div style="font-family:Arial;padding:20px">
+          <h2>Expense Tracker</h2>
+
+          <p>Your verification code is</p>
+
+          <h1 style="letter-spacing:8px">${otp}</h1>
+
+          <p>This OTP expires in <b>10 minutes</b>.</p>
+
+          <p>Do not share this code with anyone.</p>
+      </div>
+      `,
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "OTP sent successfully",
+    });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+export const verifyOTP = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+      return res.status(400).json({
+        success: false,
+        message: "Email and OTP are required",
+      });
+    }
+
+    const otpData = await OTP.findOne({ email });
+
+    if (!otpData) {
+      return res.status(400).json({
+        success: false,
+        message: "OTP expired or not found",
+      });
+    }
+
+    if (otpData.otp !== otp) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid OTP",
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(otpData.password, 10);
+
+    const user = await User.create({
+      name: otpData.name,
+      email: otpData.email,
       password: hashedPassword,
     });
 
-    // Generate JWT
+    await OTP.deleteOne({ _id: otpData._id });
+
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "7d",
     });
 
     res.status(201).json({
       success: true,
-      message: "User registered successfully",
+      message: "Account created successfully",
       token,
       user: {
         id: user._id,
@@ -51,7 +122,8 @@ export const registerUser = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error(error);
+    console.log(error);
+
     res.status(500).json({
       success: false,
       message: "Server Error",

@@ -1,18 +1,16 @@
 import express from "express";
-import { registerUser, loginUser } from "../controllers/authcontroller.js";
-import { protect } from "../middleware/authMiddleware.js";
+import {
+  sendOTP,
+  verifyOTP,
+  loginUser,
+} from "../controllers/authController.js";
 
 const router = express.Router();
 
-router.post("/register", registerUser);
-router.post("/login", loginUser);
+router.post("/send-otp", sendOTP);
 
-// Protected test route
-router.get("/me", protect, (req, res) => {
-  res.json({
-    success: true,
-    user: req.user,
-  });
-});
+router.post("/verify-otp", verifyOTP);
+
+router.post("/login", loginUser);
 
 export default router;
