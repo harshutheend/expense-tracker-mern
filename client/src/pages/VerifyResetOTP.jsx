@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import api from "../services/api";
@@ -11,6 +11,12 @@ function VerifyResetOTP() {
 
   const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!email) {
+      navigate("/forgot-password");
+    }
+  }, [email, navigate]);
 
   const handleVerify = async (e) => {
     e.preventDefault();
@@ -36,7 +42,7 @@ function VerifyResetOTP() {
         },
       });
     } catch (err) {
-      toast.error(err.response?.data?.message || "Invalid OTP");
+      toast.error(err.response?.data?.message || "OTP verification failed");
     } finally {
       setLoading(false);
     }
@@ -57,7 +63,7 @@ function VerifyResetOTP() {
           <input
             type="text"
             maxLength={6}
-            placeholder="Enter OTP"
+            placeholder="Enter 6-digit OTP"
             className="w-full border rounded-lg p-3 text-center text-2xl tracking-[10px]"
             value={otp}
             onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
@@ -66,7 +72,7 @@ function VerifyResetOTP() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700"
+            className="w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 disabled:opacity-50"
           >
             {loading ? "Verifying..." : "Verify OTP"}
           </button>

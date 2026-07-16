@@ -12,22 +12,12 @@ const transporter = nodemailer.createTransport({
 });
 
 const sendEmail = async (to, subject, html) => {
-  try {
-    await transporter.verify();
-    console.log("✅ SMTP Connected");
-
-    await transporter.sendMail({
-      from: `"Expense Tracker" <${process.env.EMAIL_USER}>`,
-      to,
-      subject,
-      html,
-    });
-
-    console.log("✅ Email sent successfully");
-  } catch (error) {
-    console.error(error);
-    throw error;
-  }
+  await transporter.sendMail({
+    from: `"Expense Tracker" <${process.env.EMAIL_USER}>`,
+    to,
+    subject,
+    html,
+  });
 };
 
 export default sendEmail;
